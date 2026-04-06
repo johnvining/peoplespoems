@@ -17,7 +17,7 @@ const { number } = Astro.params
 
 const all = await safeFetch<Poem>(`
   *[_type == "poem"] {
-    _id, number, title, body, author, source, sourceNotItalic, yearPublished, context, dateAdded, slug,
+    _id, number, title, body, author, source, sourceNotItalic, yearPublished, copyrightStatus, context, dateAdded, slug,
     editor->{ name, initials, email }
   }
 `)

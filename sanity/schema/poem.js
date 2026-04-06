@@ -16,6 +16,23 @@ export default {
     { name: 'source', title: 'Source', type: 'string' },
     { name: 'yearPublished', title: 'Year Published', type: 'number' },
     { name: 'sourceNotItalic', title: 'Don\'t italicize source', type: 'boolean' },
+    {
+      name: 'copyrightStatus',
+      title: 'Copyright Status',
+      type: 'string',
+      options: {
+        list: [
+          { value: 'pd_pre_1931',                    title: 'Expired — U.S. published before 1931' },
+          { value: 'pd_foreign_pre_1931',             title: 'Expired — published abroad before 1931' },
+          { value: 'pd_unpublished_author_pre_1956',  title: 'Expired — unpublished, author died before 1956' },
+          { value: 'pd_unpublished_anon_pre_1906',    title: 'Expired — unpublished, anonymous/unknown, created before 1906' },
+          { value: 'pd_no_notice',                    title: 'No notice — U.S. published 1931–1977 without copyright notice' },
+          { value: 'pd_not_renewed',                  title: 'Not renewed — U.S. published 1931–1963, copyright not renewed' },
+          { value: 'pd_us_govt',                      title: 'U.S. Government work — ineligible for copyright' },
+          { value: 'pd_chronicling_america_post_1931', title: 'Chronicling America — post-1931, non-syndicated, non-modern content' },
+        ],
+      },
+    },
     { name: 'editor', title: 'Editor', type: 'reference', to: [{ type: 'editor' }] },
     { name: 'context', title: 'Context', type: 'text' },
     { name: 'dateAdded', title: 'Date Added', type: 'date' },
