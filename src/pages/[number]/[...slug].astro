@@ -1,0 +1,121 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { safeFetch } from '../../lib/sanity'
+import type { Poem } from '../../lib/sanity'
+
+export async function getStaticPaths() {
+  const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`
+    *[_type == "poem"] { number, slug }
+  `)
+  return poems.flatMap((poem) => [
+    { params: { number: String(poem.number), slug: undefined } },
+    { params: { number: String(poem.number), slug: poem.slug.current } },
+  ])
+}
+
+const { number } = Astro.params
+
+const all = await safeFetch<Poem>(`
+  *[_type == "poem"] {
+    _id, number, title, body, author, source, sourceNotItalic, yearPublished, context, dateAdded, slug,
+    editor->{ name, initials, email }
+  }
+`)
+const poem = all.find((p) => String(p.number) === number)
+
+if (!poem) return Astro.redirect('/')
+
+if (!Astro.params.slug) {
+  return Astro.redirect(`/${number}/${poem.slug.current}`, 301)
+}
+
+const dateFormatted = poem.dateAdded
+  ? new Date(poem.dateAdded).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  : null
+
+const isLong = poem.body.split('\n').length > 20
+---
+
+<Layout title={`${poem.title} — People's Poems`}>
+  <div class="page poem-page">
+    <article>
+      <h1>
+        {poem.author && <span class="author">{poem.author},&nbsp;</span>}<span class="title-text">&ldquo;{poem.title}&rdquo;</span>
+      </h1>
+      <div class="header-gap">
+        {(poem.source || poem.yearPublished) && (
+          <div class={`source-line${poem.sourceNotItalic ? '' : ' source-italic'}`}>
+            {[poem.source, poem.yearPublished].filter(Boolean).join(', ')}
+          </div>
+        )}
+      </div>
+
+      <div class={`poem-body${isLong ? ' poem-body--long' : ''}`}>{poem.body}</div>
+
+      {(dateFormatted || poem.context) && (
+        <footer class="editorial">
+          <p>
+            {dateFormatted && <span>Added {dateFormatted}.</span>}
+            {poem.context && <span> {poem.context}</span>}
+            {poem.editor?.initials && <span class="initials"> &mdash; {poem.editor.initials}</span>}
+          </p>
+        </footer>
+      )}
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .poem-page {
+    max-width: 740px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: normal;
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 0.3rem;
+  }
+
+  .author, .title-text {
+    font-style: normal;
+  }
+
+  .header-gap {
+    margin-bottom: 3rem;
+  }
+
+  .source-line {
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    color: #aaa;
+  }
+
+  .source-italic { font-style: italic; }
+
+  .poem-body {
+    font-size: 1.1rem;
+    line-height: 1.75;
+    white-space: pre-wrap;
+  }
+
+  .poem-body--long {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .editorial {
+    margin-top: 3.5rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid #ddd8ce;
+    font-size: 0.82rem;
+    color: #aaa;
+    line-height: 1.7;
+  }
+
+  .initials {
+    color: #bbb;
+  }
+</style>

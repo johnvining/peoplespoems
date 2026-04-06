@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { safeFetch } from '../lib/sanity'
+import type { Poem } from '../lib/sanity'
+
+const poems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'slug'>>(`
+  *[_type == "poem"] | order(yearPublished desc) {
+    _id, number, title, author, source, sourceNotItalic, yearPublished, slug
+  }
+`)
+
+function decade(year: number) {
+  return Math.floor(year / 10) * 10
+}
+
+const byDecade = new Map<number, typeof poems>()
+for (const poem of poems) {
+  if (!poem.yearPublished) continue
+  const d = decade(poem.yearPublished)
+  if (!byDecade.has(d)) byDecade.set(d, [])
+  byDecade.get(d)!.push(poem)
+}
+const decades = [...byDecade.entries()].sort((a, b) => b[0] - a[0])
+
+const undated = poems.filter(p => !p.yearPublished)
+---
+
+<Layout title="By Date — People's Poems">
+  <div class="page by-date-page">
+    {decades.map(([dec, group]) => (
+      <section class="decade">
+        <h2>{dec}<span class="suffix">&rsquo;s</span></h2>
+        <ul class="poem-list">
+          {group.map((poem) => {
+            const href = `/${poem.number}/${poem.slug.current}`
+            const sourcePart = [poem.yearPublished, poem.source].filter(Boolean).join(' · ') || null
+            return (
+              <li>
+                <a href={href}>
+                  <div class="primary">
+                    {poem.author && <span class="author">{poem.author},&nbsp;</span>}
+                    <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                  </div>
+                  {sourcePart && (
+                    <div class="secondary">
+                      <span class={poem.sourceNotItalic ? '' : 'source-italic'}>{sourcePart}</span>
+                    </div>
+                  )}
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+    ))}
+
+    {undated.length > 0 && (
+      <section class="decade">
+        <h2>Date Unknown</h2>
+        <ul class="poem-list">
+          {undated.map((poem) => (
+            <li>
+              <a href={`/${poem.number}/${poem.slug.current}`}>
+                <div class="primary">
+                  {poem.author && <span class="author">{poem.author},&nbsp;</span>}
+                  <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                </div>
+                {poem.source && <div class="secondary">{poem.source}</div>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {poems.length === 0 && <p class="empty">No poems yet.</p>}
+  </div>
+</Layout>
+
+<style>
+  .by-date-page {
+    max-width: 680px;
+  }
+
+  .decade {
+    margin-bottom: 3rem;
+  }
+
+  .decade:last-child {
+    margin-bottom: 0;
+  }
+
+  h2 {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #bbb;
+    font-weight: normal;
+    margin-bottom: 0.75rem;
+  }
+
+  .poem-list {
+    list-style: none;
+  }
+
+  .poem-list li + li {
+    border-top: 1px solid #e8e5df;
+  }
+
+  .poem-list a {
+    display: block;
+    padding: 0.85rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .poem-list li:first-child a {
+    padding-top: 0;
+  }
+
+  .poem-list a:hover .title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .primary {
+    font-size: 0.975rem;
+    line-height: 1.5;
+  }
+
+  .suffix { text-transform: none; }
+  .author { font-weight: normal; }
+  .title { font-style: normal; }
+  .source-italic { font-style: italic; }
+
+  .secondary {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    color: #c8c4bc;
+  }
+
+  .empty {
+    color: #999;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+</style>

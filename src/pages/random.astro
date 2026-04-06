@@ -1,0 +1,15 @@
+---
+import { safeFetch } from '../lib/sanity'
+import type { Poem } from '../lib/sanity'
+
+const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`*[_type == "poem"] { number, slug }`)
+const paths = poems.map((p) => `/${p.number}/${p.slug.current}`)
+---
+
+<script define:vars={{ paths }}>
+  if (paths.length > 0) {
+    window.location.replace(paths[Math.floor(Math.random() * paths.length)])
+  } else {
+    window.location.replace('/')
+  }
+</script>

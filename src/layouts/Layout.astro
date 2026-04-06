@@ -1,0 +1,118 @@
+---
+interface Props {
+  title: string
+}
+const { title } = Astro.props
+const currentPath = Astro.url.pathname
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: Georgia, 'Times New Roman', serif;
+        background: #f5f0e8;
+        color: #1a1a1a;
+        line-height: 1.6;
+      }
+
+      /*
+        Layout system
+        ─────────────
+        One shared container value drives everything:
+          max-width: 860px  margin: 0 auto  padding: 0 2.5rem
+
+        The header uses two divs:
+          .pp-outer  — applies the container constraints (max-width, centering, padding)
+          .pp-inner  — zero horizontal padding, owns the border-bottom and flex row
+                       so the rule is exactly as wide as the live content,
+                       and the title sits flush with the rule's left edge.
+
+        .page on child components uses identical container constraints
+        so everything lines up vertically.
+      */
+
+      .pp-outer {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 2.5rem;
+      }
+
+      .pp-inner {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 1.25rem 0;
+        border-bottom: 1px solid #c8c0b0;
+      }
+
+      .pp-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        font-size: 2.4rem;
+        font-weight: 400;
+        text-decoration: none;
+        color: #1a1a1a;
+        white-space: nowrap;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .pp-title:hover { color: #555; }
+
+      .pp-nav {
+        display: flex;
+        gap: 2rem;
+        align-items: baseline;
+        flex-shrink: 0;
+      }
+
+      .pp-nav a {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-style: normal;
+        font-size: 0.85rem;
+        text-decoration: none;
+        color: #aaa;
+        white-space: nowrap;
+      }
+
+      .pp-nav a:hover,
+      .pp-nav a[aria-current="page"] {
+        color: #1a1a1a;
+      }
+
+      /* Page content — identical container constraints to .pp-outer */
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 3.5rem 2.5rem 6rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="pp-outer">
+        <div class="pp-inner">
+          <a href="/" class="pp-title">People's Poems</a>
+          <nav class="pp-nav">
+            <a href="/about" aria-current={currentPath === '/about' ? 'page' : undefined}>About</a>
+            <a href="/random">Random</a>
+            <a href="/by-date" aria-current={currentPath === '/by-date' ? 'page' : undefined}>By Date</a>
+            <a href="/search" aria-current={currentPath === '/search' ? 'page' : undefined}>Search</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <slot />
+  </body>
+</html>

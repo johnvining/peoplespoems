@@ -1,0 +1,155 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { safeFetch } from '../lib/sanity'
+import type { Poem } from '../lib/sanity'
+
+const poems = await safeFetch<Pick<Poem, 'number' | 'title' | 'author' | 'source' | 'yearPublished' | 'body' | 'slug'>>(`
+  *[_type == "poem"] | order(dateAdded desc) {
+    number, title, author, source, yearPublished, body, slug
+  }
+`)
+
+const searchData = poems.map(p => ({
+  href: `/${p.number}/${p.slug.current}`,
+  _search: [p.title, p.author, p.source, p.yearPublished, p.body]
+    .filter(Boolean).join(' ').toLowerCase(),
+}))
+---
+
+<Layout title="Search — People's Poems">
+  <div class="page search-page">
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Search titles, authors, sources, text…"
+      autocomplete="off"
+      autofocus
+    />
+
+    <ul id="results" class="poem-list">
+      {poems.map((poem) => {
+        const secondary = [poem.yearPublished, poem.source].filter(Boolean).join(' · ')
+        return (
+          <li class="result-item">
+            <a href={`/${poem.number}/${poem.slug.current}`}>
+              <div class="primary">
+                {poem.author && <span class="author">{poem.author},&nbsp;</span>}
+                <span class="title">&ldquo;{poem.title}&rdquo;</span>
+              </div>
+              {secondary && <div class="secondary">{secondary}</div>}
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+
+    <p id="empty" class="empty" hidden>No results.</p>
+    <p id="over-limit" class="over-limit" hidden></p>
+  </div>
+</Layout>
+
+<script define:vars={{ searchData }}>
+  const input = document.getElementById('search-input')
+  const items = document.querySelectorAll('.result-item')
+  const empty = document.getElementById('empty')
+  const overLimit = document.getElementById('over-limit')
+  const LIMIT = 20
+
+  function update() {
+    const q = input.value.trim().toLowerCase()
+
+    let shown = 0
+    let total = 0
+
+    items.forEach((item, i) => {
+      const matches = q.length < 2 || searchData[i]._search.includes(q)
+      if (matches) total++
+      const visible = matches && shown < LIMIT
+      item.hidden = !visible
+      if (visible) shown++
+    })
+
+    empty.hidden = total > 0
+    if (total > LIMIT) {
+      overLimit.hidden = false
+      overLimit.textContent = `Showing 20 of ${total} results — refine your search.`
+    } else {
+      overLimit.hidden = true
+    }
+  }
+
+  update()
+  input.addEventListener('input', update)
+</script>
+
+<style>
+  .search-page {
+    max-width: 680px;
+  }
+
+  #search-input {
+    width: 100%;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #c8c0b0;
+    padding: 0.25rem 0 0.6rem;
+    margin-bottom: 2.5rem;
+    color: #1a1a1a;
+    outline: none;
+  }
+
+  #search-input::placeholder {
+    color: #bbb;
+  }
+
+  #search-input:focus {
+    border-bottom-color: #888;
+  }
+
+  .poem-list {
+    list-style: none;
+  }
+
+  .poem-list li + li:not([hidden]) {
+    border-top: 1px solid #e8e5df;
+  }
+
+  .poem-list a {
+    display: block;
+    padding: 0.85rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .poem-list li:first-child a {
+    padding-top: 0;
+  }
+
+  .poem-list a:hover .title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .primary {
+    font-size: 0.975rem;
+    line-height: 1.5;
+  }
+
+  .author { font-weight: normal; }
+  .title { font-style: italic; }
+
+  .secondary {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    color: #c8c4bc;
+  }
+
+  .empty, .over-limit {
+    color: #bbb;
+    font-style: italic;
+    font-size: 0.82rem;
+  }
+</style>
