@@ -14,7 +14,10 @@ export default {
     { name: 'body', title: 'Poem Text', type: 'text' },
     { name: 'author', title: 'Author', type: 'string' },
     { name: 'source', title: 'Source', type: 'string' },
+    { name: 'sourceUrl', title: 'Source URL', type: 'url' },
+    { name: 'cityState', title: 'City, State', type: 'string' },
     { name: 'yearPublished', title: 'Year Published', type: 'number' },
+    { name: 'datePublished', title: 'Date Published (full)', type: 'date', description: 'Optional — use when the exact publication date is known. Year Published is still used for the By Date index.' },
     { name: 'sourceNotItalic', title: 'Don\'t italicize source', type: 'boolean' },
     {
       name: 'copyrightStatus',

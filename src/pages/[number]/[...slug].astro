@@ -17,7 +17,7 @@ const { number } = Astro.params
 
 const all = await safeFetch<Poem>(`
   *[_type == "poem"] {
-    _id, number, title, body, author, source, sourceNotItalic, yearPublished, copyrightStatus, context, dateAdded, slug,
+    _id, number, title, body, author, source, sourceUrl, cityState, sourceNotItalic, yearPublished, datePublished, copyrightStatus, context, dateAdded, slug,
     editor->{ name, initials, email }
   }
 `)
@@ -34,6 +34,10 @@ const dateFormatted = poem.dateAdded
   : null
 
 const isLong = poem.body.split('\n').length > 20
+
+const pubDate = poem.datePublished
+  ? new Date(poem.datePublished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  : poem.yearPublished ?? null
 ---
 
 <Layout title={`${poem.title} — People's Poems`}>
@@ -43,19 +47,22 @@ const isLong = poem.body.split('\n').length > 20
         {poem.author && <span class="author">{poem.author},&nbsp;</span>}<span class="title-text">&ldquo;{poem.title}&rdquo;</span>
       </h1>
       <div class="header-gap">
-        {(poem.source || poem.yearPublished) && (
-          <div class={`source-line${poem.sourceNotItalic ? '' : ' source-italic'}`}>
-            {[poem.source, poem.yearPublished].filter(Boolean).join(', ')}
+        {(poem.source || poem.cityState || pubDate) && (
+          <div class="source-line">
+            {poem.source && <span class={poem.sourceNotItalic ? '' : 'source-italic'}>{poem.source}</span>}
+            {poem.cityState && <span>{poem.source ? `, ${poem.cityState}` : poem.cityState}</span>}
+            {pubDate && <span>{(poem.source || poem.cityState) ? `, ${pubDate}` : pubDate}</span>}
           </div>
         )}
       </div>
 
       <div class={`poem-body${isLong ? ' poem-body--long' : ''}`}>{poem.body}</div>
 
-      {(dateFormatted || poem.context) && (
+      {(dateFormatted || poem.context || poem.sourceUrl) && (
         <footer class="editorial">
           <p>
             {dateFormatted && <span>Added {dateFormatted}.</span>}
+            {poem.sourceUrl && <span> <a class="source-footer-link" href={poem.sourceUrl} target="_blank" rel="noopener noreferrer">View this poem at source.</a></span>}
             {poem.context && <span> {poem.context}</span>}
             {poem.editor?.initials && <span class="initials"> &mdash; {poem.editor.initials}</span>}
           </p>
@@ -94,6 +101,18 @@ const isLong = poem.body.split('\n').length > 20
   }
 
   .source-italic { font-style: italic; }
+
+  .source-footer-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .source-footer-link:hover {
+    color: #888;
+  }
 
   .poem-body {
     font-size: 1.1rem;

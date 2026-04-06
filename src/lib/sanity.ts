@@ -42,7 +42,10 @@ export interface Poem {
   body: string
   author?: string
   source?: string
+  sourceUrl?: string
+  cityState?: string
   yearPublished?: number
+  datePublished?: string
   sourceNotItalic?: boolean
   copyrightStatus?: CopyrightStatus
   editor?: { name: string; initials: string; email?: string }
