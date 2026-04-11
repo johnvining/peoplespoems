@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro'
 import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
+import { firstLine } from '../lib/utils'
 
-const poems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'slug'>>(`
+const poems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'slug' | 'body'>>(`
   *[_type == "poem" && defined(slug.current)] | order(yearPublished desc) {
-    _id, number, title, author, source, sourceNotItalic, yearPublished, slug
+    _id, number, title, author, source, sourceNotItalic, yearPublished, slug, body
   }
 `)
 
@@ -39,7 +40,10 @@ const undated = poems.filter(p => !p.yearPublished)
                 <a href={href}>
                   <div class="primary">
                     {poem.author && <span class="author">{poem.author},&nbsp;</span>}
-                    <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                    {poem.title
+                    ? <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                    : <span class="title title--untitled">[{firstLine(poem.body)}]</span>
+                  }
                   </div>
                   {sourcePart && (
                     <div class="secondary">
@@ -63,7 +67,10 @@ const undated = poems.filter(p => !p.yearPublished)
               <a href={`/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`}>
                 <div class="primary">
                   {poem.author && <span class="author">{poem.author},&nbsp;</span>}
-                  <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                  {poem.title
+                    ? <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                    : <span class="title title--untitled">[{firstLine(poem.body)}]</span>
+                  }
                 </div>
                 {poem.source && <div class="secondary">{poem.source}</div>}
               </a>

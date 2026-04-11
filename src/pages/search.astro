@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
+import { firstLine } from '../lib/utils'
 
 const poems = await safeFetch<Pick<Poem, 'number' | 'title' | 'author' | 'source' | 'yearPublished' | 'body' | 'slug'>>(`
   *[_type == "poem" && defined(slug.current)] | order(dateAdded desc) {
@@ -34,7 +35,10 @@ const searchData = poems.map(p => ({
             <a href={`/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`}>
               <div class="primary">
                 {poem.author && <span class="author">{poem.author},&nbsp;</span>}
-                <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                {poem.title
+                  ? <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                  : <span class="title title--untitled">[{firstLine(poem.body)}]</span>
+                }
               </div>
               {secondary && <div class="secondary">{secondary}</div>}
             </a>

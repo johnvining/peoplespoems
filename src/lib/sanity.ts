@@ -38,7 +38,7 @@ export type CopyrightStatus =
 export interface Poem {
   _id: string
   number: number
-  title: string
+  title?: string
   body: string
   author?: string
   source?: string

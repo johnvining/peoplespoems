@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro'
 import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
+import { firstLine } from '../lib/utils'
 
-const allPoems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'dateAdded' | 'slug'>>(`
+const allPoems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'dateAdded' | 'slug' | 'body'>>(`
   *[_type == "poem" && defined(slug.current)] | order(dateAdded desc) [0...20] {
-    _id, number, title, author, source, sourceNotItalic, yearPublished, dateAdded, slug
+    _id, number, title, author, source, sourceNotItalic, yearPublished, dateAdded, slug, body
   }
 `)
 const poems = allPoems.slice(0, 20)
@@ -34,7 +35,10 @@ function fmtDate(d: string) {
               <a href={href}>
                 <div class="primary">
                   {poem.author && <span class="author">{poem.author},&nbsp;</span>}
-                  <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                  {poem.title
+                    ? <span class="title">&ldquo;{poem.title}&rdquo;</span>
+                    : <span class="title title--untitled">[{firstLine(poem.body)}]</span>
+                  }
                 </div>
                 {(datePart || sourcePart) && (
                   <div class="secondary">
