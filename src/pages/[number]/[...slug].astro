@@ -39,6 +39,8 @@ const isLong = poem.body.split('\n').length > 20
 const pubDate = poem.datePublished
   ? fmtDate(poem.datePublished)
   : poem.yearPublished ?? null
+
+const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].filter(Boolean).join(', ')
 ---
 
 <Layout title={`${poem.title ?? `[${firstLine(poem.body)}]`} — People's Poems`}>
@@ -52,12 +54,8 @@ const pubDate = poem.datePublished
         }
       </h1>
       <div class="header-gap">
-        {(poem.source || poem.cityState || pubDate) && (
-          <div class="source-line">
-            {poem.source && <span class={poem.sourceNotItalic ? '' : 'source-italic'}>{poem.source}</span>}
-            {poem.cityState && <span>{poem.source ? `, ${poem.cityState}` : poem.cityState}</span>}
-            {pubDate && <span>{(poem.source || poem.cityState) ? `, ${pubDate}` : pubDate}</span>}
-          </div>
+        {(poem.source || sourceExtra) && (
+          <div class="source-line">{poem.source && <span class={poem.sourceNotItalic ? '' : 'source-italic'}>{poem.source}</span>}{sourceExtra && (poem.source ? `, ${sourceExtra}` : sourceExtra)}</div>
         )}
       </div>
 
