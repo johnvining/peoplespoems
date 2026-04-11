@@ -31,7 +31,7 @@ function fmtDate(d: string) {
       <ul class="poem-list">
         {poems.length === 0 && <li class="empty">No poems yet.</li>}
         {poems.map((poem) => {
-          const href = `/${poem.number}/${poem.slug.current}`
+          const href = `/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`
           const datePart = poem.dateAdded ? `added ${fmtDate(poem.dateAdded)}` : null
           const sourcePart = [poem.source, poem.yearPublished].filter(Boolean).join(', ') || null
           return (

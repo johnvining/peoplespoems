@@ -32,7 +32,7 @@ const undated = poems.filter(p => !p.yearPublished)
         <h2>{dec}<span class="suffix">&rsquo;s</span></h2>
         <ul class="poem-list">
           {group.map((poem) => {
-            const href = `/${poem.number}/${poem.slug.current}`
+            const href = `/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`
             const sourcePart = [poem.yearPublished, poem.source].filter(Boolean).join(' · ') || null
             return (
               <li>
@@ -60,7 +60,7 @@ const undated = poems.filter(p => !p.yearPublished)
         <ul class="poem-list">
           {undated.map((poem) => (
             <li>
-              <a href={`/${poem.number}/${poem.slug.current}`}>
+              <a href={`/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`}>
                 <div class="primary">
                   {poem.author && <span class="author">{poem.author},&nbsp;</span>}
                   <span class="title">&ldquo;{poem.title}&rdquo;</span>

@@ -8,8 +8,8 @@ export async function getStaticPaths() {
     *[_type == "poem"] { number, slug }
   `)
   return poems.flatMap((poem) => [
-    { params: { number: String(poem.number), slug: undefined } },
-    { params: { number: String(poem.number), slug: poem.slug.current } },
+    { params: { number: String(poem.number).padStart(5, '0'), slug: undefined } },
+    { params: { number: String(poem.number).padStart(5, '0'), slug: poem.slug.current } },
   ])
 }
 
@@ -21,7 +21,7 @@ const all = await safeFetch<Poem>(`
     editor->{ name, initials, email }
   }
 `)
-const poem = all.find((p) => String(p.number) === number)
+const poem = all.find((p) => String(p.number).padStart(5, '0') === number)
 
 if (!poem) return Astro.redirect('/')
 
@@ -68,6 +68,8 @@ const pubDate = poem.datePublished
           </p>
         </footer>
       )}
+
+      <p class="poem-id">{String(poem.number).padStart(5, '0')}</p>
     </article>
   </div>
 </Layout>
@@ -136,5 +138,14 @@ const pubDate = poem.datePublished
 
   .initials {
     color: #bbb;
+  }
+
+  .poem-id {
+    margin-top: 3rem;
+    text-align: center;
+    font-family: monospace;
+    font-size: 0.65rem;
+    color: #bbb;
+    letter-spacing: 0.05em;
   }
 </style>

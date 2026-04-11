@@ -10,7 +10,7 @@ const poems = await safeFetch<Pick<Poem, 'number' | 'title' | 'author' | 'source
 `)
 
 const searchData = poems.map(p => ({
-  href: `/${p.number}/${p.slug.current}`,
+  href: `/${String(p.number).padStart(5, '0')}/${p.slug.current}`,
   _search: [p.title, p.author, p.source, p.yearPublished, p.body]
     .filter(Boolean).join(' ').toLowerCase(),
 }))
@@ -31,7 +31,7 @@ const searchData = poems.map(p => ({
         const secondary = [poem.yearPublished, poem.source].filter(Boolean).join(' · ')
         return (
           <li class="result-item">
-            <a href={`/${poem.number}/${poem.slug.current}`}>
+            <a href={`/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`}>
               <div class="primary">
                 {poem.author && <span class="author">{poem.author},&nbsp;</span>}
                 <span class="title">&ldquo;{poem.title}&rdquo;</span>
