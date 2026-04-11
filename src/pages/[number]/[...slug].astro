@@ -10,6 +10,8 @@ export async function getStaticPaths() {
   return poems.flatMap((poem) => [
     { params: { number: String(poem.number).padStart(5, '0'), slug: undefined } },
     { params: { number: String(poem.number).padStart(5, '0'), slug: poem.slug.current } },
+    { params: { number: String(poem.number), slug: undefined } },
+    { params: { number: String(poem.number), slug: poem.slug.current } },
   ])
 }
 
@@ -21,7 +23,7 @@ const all = await safeFetch<Poem>(`
     editor->{ name, initials, email }
   }
 `)
-const poem = all.find((p) => String(p.number).padStart(5, '0') === number)
+const poem = all.find((p) => String(p.number).padStart(5, '0') === number || String(p.number) === number)
 
 if (!poem) return Astro.redirect('/')
 
