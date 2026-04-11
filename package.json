@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@sanity/client": "^6.22.5",
-    "astro": "^5.18.1"
+    "astro": "^5.18.1",
+    "marked": "^18.0.0"
   }
 }
