@@ -2,7 +2,7 @@
 import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
 
-const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`*[_type == "poem"] { number, slug }`)
+const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`*[_type == "poem" && defined(slug.current)] { number, slug }`)
 const paths = poems.map((p) => `/${String(p.number).padStart(5, '0')}/${p.slug.current}`)
 ---
 

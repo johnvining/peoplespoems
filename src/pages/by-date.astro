@@ -4,7 +4,7 @@ import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
 
 const poems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'slug'>>(`
-  *[_type == "poem"] | order(yearPublished desc) {
+  *[_type == "poem" && defined(slug.current)] | order(yearPublished desc) {
     _id, number, title, author, source, sourceNotItalic, yearPublished, slug
   }
 `)
