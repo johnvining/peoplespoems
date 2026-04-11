@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
-import { firstLine } from '../../lib/utils'
+import { firstLine, fmtDate } from '../../lib/utils'
 
 export async function getStaticPaths() {
   const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`
@@ -32,14 +32,12 @@ if (!Astro.params.slug) {
   return Astro.redirect(`/${number}/${poem.slug.current}`, 301)
 }
 
-const dateFormatted = poem.dateAdded
-  ? new Date(poem.dateAdded).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-  : null
+const dateFormatted = poem.dateAdded ? fmtDate(poem.dateAdded) : null
 
 const isLong = poem.body.split('\n').length > 20
 
 const pubDate = poem.datePublished
-  ? new Date(poem.datePublished).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  ? fmtDate(poem.datePublished)
   : poem.yearPublished ?? null
 ---
 
