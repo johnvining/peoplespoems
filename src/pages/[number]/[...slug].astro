@@ -4,6 +4,7 @@ import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
 import { firstLine, fmtDate } from '../../lib/utils'
 import { marked } from 'marked'
+import { COPYRIGHT } from '../../lib/copyright'
 
 export async function getStaticPaths() {
   const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`
@@ -73,7 +74,18 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
         </footer>
       )}
 
-      <p class="poem-id">{String(poem.number).padStart(5, '0')}</p>
+      <div class="poem-footer">
+        <span class="poem-id">{String(poem.number).padStart(5, '0')}</span>
+        {poem.copyrightStatus && COPYRIGHT[poem.copyrightStatus] && (
+          <a
+            class="copyright-link"
+            href={`/copyright#${poem.copyrightStatus}`}
+            data-tooltip={COPYRIGHT[poem.copyrightStatus].description}
+          >
+            {COPYRIGHT[poem.copyrightStatus].label}
+          </a>
+        )}
+      </div>
     </article>
   </div>
 </Layout>
@@ -149,13 +161,57 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
   }
 
 
-  .poem-id {
+  .poem-footer {
     margin-top: 3rem;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .poem-id {
     font-family: monospace;
     font-size: 0.65rem;
     color: #bbb;
     letter-spacing: 0.05em;
+  }
+
+  .copyright-link {
+    position: relative;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ccc;
+    text-decoration: none;
+  }
+
+  .copyright-link:hover {
+    color: #999;
+  }
+
+  .copyright-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    background: #333;
+    color: #eee;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 3px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    white-space: normal;
+  }
+
+  .copyright-link:hover::after {
+    opacity: 1;
   }
 
   @media (max-width: 600px) {
@@ -181,7 +237,7 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
       padding-top: 1.25rem;
     }
 
-    .poem-id {
+    .poem-footer {
       margin-top: 2rem;
     }
   }
