@@ -1,19 +1,146 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { fetchEditors } from '../lib/sanity'
+
+const editors = await fetchEditors()
 ---
 
 <Layout title="About — People's Poems">
-  <div class="page">
-    <h1>About</h1>
-    <p>Coming soon.</p>
+  <div class="page about-page">
+
+    <div class="intro">
+      <p><!-- Introduction goes here --></p>
+    </div>
+
+    <section class="editors">
+      <p class="editors-summary">Coming soon.</p>
+      <h2>Contributors</h2>
+      <ul>
+        {editors.map((editor) => (
+          <li class="editor">
+            <span class="editor-initials">{editor.initials}</span>
+            <div class="editor-body">
+              <p class="editor-header">
+                <span class="editor-name">{editor.name}</span>
+                {editor.bio && <span class="editor-bio"> {editor.bio}</span>}
+              </p>
+            {(editor.email || editor.url) && (
+              <p class="editor-links">
+                {editor.url && <a href={editor.url} target="_blank" rel="noopener noreferrer">{editor.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>}
+                {editor.email && editor.url && <span class="sep">&middot;</span>}
+                {editor.email && <a href={`mailto:${editor.email}`}>{editor.email}</a>}
+              </p>
+            )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
   </div>
 </Layout>
 
 <style>
-  h1 {
-    font-size: 1.5rem;
+  .about-page {
+    max-width: 640px;
+    padding-top: 3.5rem;
+    padding-bottom: 6rem;
+  }
+
+  .intro {
+    margin-bottom: 3rem;
+  }
+
+  .intro p {
+    font-size: 0.875rem;
+    line-height: 1.85;
+    color: #555;
+  }
+
+  .intro p + p {
+    margin-top: 1rem;
+  }
+
+  h2 {
+    font-size: 0.72rem;
     font-weight: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-top: 4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .editors-summary {
+    font-size: 0.875rem;
+    line-height: 1.85;
+    color: #555;
     margin-bottom: 1.5rem;
   }
-  p { color: #888; font-style: italic; }
+
+  .editors ul {
+    list-style: none;
+  }
+
+  .editor {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.9rem 0;
+  }
+
+  .editor + .editor {
+    border-top: 1px solid #e8e5df;
+  }
+
+  .editor-initials {
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: #ccc;
+    flex-shrink: 0;
+  }
+
+  .editor-body {
+    flex: 1;
+  }
+
+  .editor-header {
+    line-height: 1.5;
+  }
+
+  .editor-name {
+    font-size: 0.975rem;
+    color: #1a1a1a;
+  }
+
+  .editor-bio {
+    font-size: 0.875rem;
+    color: #555;
+  }
+
+  .editor-links {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    color: #aaa;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+
+  .editor-links a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    text-decoration-color: #ccc;
+  }
+
+  .editor-links a:hover {
+    color: #555;
+  }
+
+  .sep {
+    color: #ddd;
+  }
 </style>

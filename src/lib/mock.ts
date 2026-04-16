@@ -1,6 +1,17 @@
-import type { Poem } from './sanity'
+import type { Editor, Poem } from './sanity'
 
 const EDITOR = { name: 'Placeholder Editor', initials: 'P.E.', email: 'editor@example.com' }
+
+export const MOCK_EDITORS: Editor[] = [
+  {
+    _id: 'editor-1',
+    name: 'Placeholder Editor',
+    initials: 'P.E.',
+    email: 'editor@example.com',
+    url: 'https://example.com',
+    bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+  },
+]
 
 export const MOCK_POEMS: Poem[] = [
   {

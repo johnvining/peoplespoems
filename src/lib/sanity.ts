@@ -1,5 +1,5 @@
 import { createClient } from '@sanity/client'
-import { MOCK_POEMS } from './mock'
+import { MOCK_EDITORS, MOCK_POEMS } from './mock'
 
 const projectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID
 
@@ -13,6 +13,11 @@ export const client = createClient({
 export async function safeFetch<T>(query: string, params?: Record<string, unknown>): Promise<T[]> {
   if (!projectId) return MOCK_POEMS as unknown as T[]
   return client.fetch<T[]>(query, params)
+}
+
+export async function fetchEditors(): Promise<Editor[]> {
+  if (!projectId) return MOCK_EDITORS
+  return client.fetch<Editor[]>(`*[_type == "editor"] | order(name asc) { _id, name, initials, email, url, bio }`)
 }
 
 // Public domain basis for each poem. Values are derived from the Cornell copyright chart:
@@ -34,6 +39,15 @@ export type CopyrightStatus =
   | 'pd_us_govt'
   // Post 1931, found via LOC Chronicling America; judged to be non-syndicated, non-modern content
   | 'pd_chronicling_america_post_1931'
+
+export interface Editor {
+  _id: string
+  name: string
+  initials: string
+  email?: string
+  url?: string
+  bio?: string
+}
 
 export interface Poem {
   _id: string
