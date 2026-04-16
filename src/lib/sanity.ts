@@ -17,7 +17,7 @@ export async function safeFetch<T>(query: string, params?: Record<string, unknow
 
 export async function fetchEditors(): Promise<Editor[]> {
   if (!projectId) return MOCK_EDITORS
-  return client.fetch<Editor[]>(`*[_type == "editor"] | order(name asc) { _id, name, initials, email, url, bio }`)
+  return client.fetch<Editor[]>(`*[_type == "editor"] | order(_createdAt asc) { _id, name, initials, email, url, bio }`)
 }
 
 // Public domain basis for each poem. Values are derived from the Cornell copyright chart:
