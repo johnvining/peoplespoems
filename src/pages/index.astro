@@ -5,7 +5,7 @@ import type { Poem } from '../lib/sanity'
 import { firstLine, fmtDate } from '../lib/utils'
 
 const allPoems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'dateAdded' | 'slug' | 'body'>>(`
-  *[_type == "poem" && defined(slug.current)] | order(dateAdded desc) [0...20] {
+  *[_type == "poem" && defined(slug.current)] | order(dateAdded desc, number desc) [0...20] {
     _id, number, title, author, source, sourceNotItalic, yearPublished, dateAdded, slug, body
   }
 `)
