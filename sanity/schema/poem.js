@@ -1,3 +1,5 @@
+import { createElement } from 'react'
+
 export default {
   name: 'poem',
   title: 'Poem',
@@ -24,6 +26,7 @@ export default {
       name: 'copyrightStatus',
       title: 'Copyright Status',
       type: 'string',
+      description: createElement('span', null, 'See the ', createElement('a', { href: 'https://peoplespoems.vercel.app/copyright', target: '_blank', rel: 'noopener noreferrer' }, 'copyright guide'), ' for descriptions.'),
       options: {
         list: [
           { value: 'pd_pre_1931',                    title: 'Expired — U.S. published before 1931' },
