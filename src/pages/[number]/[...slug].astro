@@ -22,7 +22,7 @@ const { number } = Astro.params
 
 const all = await safeFetch<Poem>(`
   *[_type == "poem"] {
-    _id, number, title, body, author, source, sourceUrl, cityState, sourceNotItalic, yearPublished, datePublished, copyrightStatus, context, dateAdded, slug,
+    _id, number, title, body, author, source, sourceUrlPublic, cityState, sourceNotItalic, yearPublished, datePublished, copyrightStatus, context, dateAdded, slug,
     editor->{ name, initials, email }
   }
 `)
@@ -63,11 +63,11 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
 
       <div class={`poem-body${isLong ? ' poem-body--long' : ''}`}>{poem.body}</div>
 
-      {(dateFormatted || poem.context || poem.sourceUrl) && (
+      {(dateFormatted || poem.context || poem.sourceUrlPublic) && (
         <footer class="editorial">
           <p>
             {dateFormatted && <span>Added {dateFormatted}.</span>}
-            {poem.sourceUrl && <span> <a class="source-footer-link" href={poem.sourceUrl} target="_blank" rel="noopener noreferrer">View this poem at source.</a></span>}
+            {poem.sourceUrlPublic && <span> <a class="source-footer-link" href={poem.sourceUrlPublic} target="_blank" rel="noopener noreferrer">View this poem at source.</a></span>}
             {poem.context && <span class="context" set:html={marked.parseInline(poem.context)} />}
             {poem.editor?.initials && <span class="initials"> &mdash; {poem.editor.initials}</span>}
           </p>

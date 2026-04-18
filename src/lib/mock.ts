@@ -35,7 +35,7 @@ in reprehenderit in voluptate
 velit esse cillum.`,
     author: 'Placeholder Author',
     source: 'Placeholder Source',
-    sourceUrl: 'https://example.com/placeholder-source',
+    sourceUrlPublic: 'https://example.com/placeholder-source',
     cityState: 'Springfield, IL',
     yearPublished: 1970,
     datePublished: '1970-03-14',

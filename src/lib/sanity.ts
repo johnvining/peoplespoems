@@ -56,7 +56,8 @@ export interface Poem {
   body: string
   author?: string
   source?: string
-  sourceUrl?: string
+  sourceUrlPublic?: string
+  sourceUrlPrivate?: string
   cityState?: string
   yearPublished?: number
   datePublished?: string
