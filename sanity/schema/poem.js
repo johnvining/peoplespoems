@@ -42,7 +42,7 @@ export default {
     },
     { name: 'editor', title: 'Editor', type: 'reference', to: [{ type: 'editor' }] },
     { name: 'context', title: 'Context', type: 'text' },
-    { name: 'dateAdded', title: 'Date Added', type: 'date' },
+    { name: 'dateAdded', title: 'Date Added', type: 'date', initialValue: () => new Date().toISOString().split('T')[0] },
     {
       name: 'tags',
       title: 'Tags',
