@@ -6,7 +6,7 @@ const projectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID
 export const client = createClient({
   projectId: projectId ?? 'placeholder',
   dataset: import.meta.env.PUBLIC_SANITY_DATASET ?? 'production',
-  useCdn: true,
+  useCdn: false,
   apiVersion: '2024-01-01',
 })
 
