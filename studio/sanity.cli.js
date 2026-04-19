@@ -5,4 +5,5 @@ export default defineCliConfig({
     projectId: '5nnx65nr',
     dataset: 'production',
   },
+  studioHost: 'peoples-poems',
 })
