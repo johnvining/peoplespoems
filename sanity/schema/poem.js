@@ -54,7 +54,7 @@ export default {
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: { source: 'title', maxLength: 96 },
+      options: { source: (doc) => doc.title || (doc.body ? doc.body.split('\n')[0] : ''), maxLength: 96 },
     },
   ],
   preview: {
