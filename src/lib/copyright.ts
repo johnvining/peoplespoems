@@ -30,7 +30,7 @@ export const COPYRIGHT: Record<CopyrightStatus, CopyrightInfo> = {
     hidden: true,
   },
   pd_no_notice: {
-    label: 'No copyright notice',
+    label: 'No copyright notice pre-1977',
     description:
       'Published in the United States between 1931 and 1977 without a copyright notice. Under the law then in effect, notice was required for protection.',
   },
