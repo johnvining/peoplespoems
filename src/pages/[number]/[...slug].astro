@@ -22,7 +22,7 @@ const { number } = Astro.params
 
 const all = await safeFetch<Poem>(`
   *[_type == "poem"] {
-    _id, number, title, body, author, source, sourceUrlPublic, cityState, sourceNotItalic, yearPublished, datePublished, copyrightStatus, context, dateAdded, slug,
+    _id, _createdAt, number, title, body, author, source, sourceUrlPublic, cityState, sourceNotItalic, yearPublished, datePublished, copyrightStatus, context, dateAdded, slug,
     editor->{ name, initials, email }
   }
 `)
@@ -34,7 +34,7 @@ if (!Astro.params.slug) {
   return Astro.redirect(`/${number}/${poem.slug.current}`, 301)
 }
 
-const dateFormatted = poem.dateAdded ? fmtDate(poem.dateAdded) : null
+const dateFormatted = fmtDate(poem.dateAdded ?? poem._createdAt)
 
 const isLong = poem.body.split('\n').length > 20
 
@@ -63,7 +63,7 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
 
       <div class={`poem-body${isLong ? ' poem-body--long' : ''}`}>{poem.body}</div>
 
-      {(dateFormatted || poem.context || poem.sourceUrlPublic) && (
+      {(dateFormatted || poem.context || poem.sourceUrlPublic || poem.source) && (
         <footer class="editorial">
           <p>
             {dateFormatted && <span>Added {dateFormatted}.</span>}

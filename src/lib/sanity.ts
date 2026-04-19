@@ -51,6 +51,7 @@ export interface Editor {
 
 export interface Poem {
   _id: string
+  _createdAt: string
   number: number
   title?: string
   body: string
