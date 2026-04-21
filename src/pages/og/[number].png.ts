@@ -91,23 +91,30 @@ export const GET: APIRoute = async ({ params }) => {
     return col.reduce((h, l) => h + (l.trim() ? lh : blankH), 0)
   }
 
-  // Split lines into N columns at the nearest stanza boundaries to equal thirds/halves
-  function splitIntoN(lns: string[], n: number): string[][] {
+  // Split lines into N columns greedily: fill each column with as many complete
+  // stanzas as fit within AVAIL_H before moving to the next column.
+  function splitIntoN(lns: string[], n: number, fs: number): string[][] {
     if (n === 1) return [lns]
-    const stanzaStarts: number[] = [0]
+    // Indices where a new stanza begins after a blank line
+    const stanzaStarts: number[] = []
     for (let i = 1; i < lns.length; i++) {
       if (!lns[i - 1].trim() && lns[i].trim()) stanzaStarts.push(i)
     }
     const result: string[][] = []
     let prev = 0
-    for (let c = 1; c < n; c++) {
-      const target = Math.round(lns.length * c / n)
-      let best = stanzaStarts.reduce((b, s) =>
-        Math.abs(s - target) < Math.abs(b - target) ? s : b
-      , stanzaStarts[0])
-      if (best <= prev) best = stanzaStarts.find(s => s > prev) ?? target
-      result.push(lns.slice(prev, best))
-      prev = best
+    for (let c = 0; c < n - 1; c++) {
+      const colsLeft = n - c - 1
+      const splits = stanzaStarts.filter(s => s > prev)
+      // Must leave at least one split point per remaining column
+      const usable = splits.slice(0, Math.max(1, splits.length - colsLeft + 1))
+      // Greedy: advance as long as the column fits
+      let split = usable[0] ?? lns.length
+      for (const s of usable) {
+        if (colHeightPx(lns.slice(prev, s), fs) <= AVAIL_H) split = s
+        else break
+      }
+      result.push(lns.slice(prev, split))
+      prev = split
     }
     result.push(lns.slice(prev))
     return result
@@ -126,7 +133,7 @@ export const GET: APIRoute = async ({ params }) => {
       const mc = approxMaxChars(nCols, fontSize)
       // Skip 3-col when lines would be too cramped
       if (nCols === 3 && maxLineLen > mc + 5) continue
-      const cols = splitIntoN(lines, nCols)
+      const cols = splitIntoN(lines, nCols, fontSize)
       const maxH = Math.max(...cols.map(c => colHeightPx(c, fontSize)))
       if (maxH <= AVAIL_H) {
         chosen = { nCols, fontSize, maxChars: mc, cols }
@@ -138,7 +145,7 @@ export const GET: APIRoute = async ({ params }) => {
   // Absolute fallback: smallest font, 3 columns
   if (!chosen) {
     const fontSize = FONT_SIZES[FONT_SIZES.length - 1]
-    const cols = splitIntoN(lines, 3)
+    const cols = splitIntoN(lines, 3, fontSize)
     chosen = { nCols: 3, fontSize, maxChars: approxMaxChars(3, fontSize), cols }
   }
 
