@@ -16,7 +16,7 @@ const editors = await fetchEditors()
       <h2>Contributors</h2>
       <ul>
         {editors.map((editor) => (
-          <li class="editor">
+          <li class="editor" id={editor.initials?.toLowerCase()}>
             <span class="editor-initials">{editor.initials}</span>
             <div class="editor-body">
               <p class="editor-header">
