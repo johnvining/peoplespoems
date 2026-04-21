@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.18",
+    "@resvg/resvg-js": "^2.6.2",
     "@sanity/client": "^6.22.5",
     "astro": "^5.18.1",
-    "marked": "^18.0.0"
+    "marked": "^18.0.0",
+    "satori": "^0.26.0"
   }
 }
