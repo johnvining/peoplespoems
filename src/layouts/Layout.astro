@@ -1,9 +1,11 @@
 ---
 interface Props {
   title: string
+  ogImage?: string
 }
-const { title } = Astro.props
+const { title, ogImage } = Astro.props
 const currentPath = Astro.url.pathname
+const siteUrl = 'https://www.peoplespoems.com'
 ---
 
 <!doctype html>
@@ -12,6 +14,16 @@ const currentPath = Astro.url.pathname
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    {ogImage && (
+      <>
+        <meta property="og:title" content={title} />
+        <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+        <meta property="og:image:width" content="2400" />
+        <meta property="og:image:height" content="1260" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+      </>
+    )}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />

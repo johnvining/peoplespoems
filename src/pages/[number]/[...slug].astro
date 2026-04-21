@@ -45,7 +45,10 @@ const pubDate = poem.datePublished
 const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].filter(Boolean).join(', ')
 ---
 
-<Layout title={`${poem.title ?? `[${firstLine(poem.body)}]`} — People's Poems`}>
+<Layout
+  title={`${poem.title ?? `[${firstLine(poem.body)}]`} — People's Poems`}
+  ogImage={`/og/${String(poem.number).padStart(5, '0')}.png`}
+>
   <div class="page poem-page">
     <article>
       <h1>
