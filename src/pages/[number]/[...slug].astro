@@ -88,6 +88,11 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
             {COPYRIGHT[poem.copyrightStatus].label}
           </a>
         )}
+        <button
+          class="copy-image-btn"
+          data-image-url={`/og/${String(poem.number).padStart(5, '0')}.png`}
+          aria-label="Copy image to clipboard"
+        >Copy as Image</button>
       </div>
     </article>
   </div>
@@ -228,6 +233,20 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
     opacity: 1;
   }
 
+  .copy-image-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.65rem;
+    color: #ccc;
+  }
+
+  .copy-image-btn:hover {
+    color: #999;
+  }
+
   @media (max-width: 600px) {
     h1 {
       font-size: 1.3rem;
@@ -256,3 +275,21 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
     }
   }
 </style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.copy-image-btn')
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      const url = btn.dataset.imageUrl!
+      try {
+        const res  = await fetch(url)
+        const blob = await res.blob()
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        btn.textContent = 'Copied!'
+        setTimeout(() => { btn.textContent = 'Copy as Image' }, 2000)
+      } catch {
+        window.open(url, '_blank')
+      }
+    })
+  }
+</script>
