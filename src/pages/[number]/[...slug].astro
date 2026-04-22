@@ -132,7 +132,8 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
 
   .source-italic { font-style: italic; }
 
-  .source-footer-link {
+  .source-footer-link,
+  .context :global(a) {
     color: inherit;
     text-decoration: underline;
     text-decoration-color: #ccc;
@@ -140,7 +141,8 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
     text-decoration-thickness: 1px;
   }
 
-  .source-footer-link:hover {
+  .source-footer-link:hover,
+  .context :global(a:hover) {
     color: #888;
   }
 
