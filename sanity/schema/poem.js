@@ -42,7 +42,7 @@ export default {
     },
     { name: 'editor', title: 'Editor', type: 'reference', to: [{ type: 'editor' }] },
     { name: 'context', title: 'Context', type: 'text' },
-    { name: 'dateAdded', title: 'Date Added', type: 'date', initialValue: () => new Date().toISOString().split('T')[0] },
+    { name: 'dateAdded', title: 'Date Added', type: 'date', initialValue: () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; } },
     {
       name: 'tags',
       title: 'Tags',
