@@ -2,9 +2,48 @@ import type { APIRoute } from 'astro'
 import satori from 'satori'
 import { Resvg } from '@resvg/resvg-js'
 import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { list, put } from '@vercel/blob'
 import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
 import { firstLine } from '../../lib/utils'
+
+// Bump when rendering logic changes to invalidate all cached PNGs.
+const RENDER_VERSION = 'v1'
+const BLOB_PREFIX = 'og/'
+const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
+
+type CachedPoem = Pick<Poem, 'number' | 'title' | 'author' | 'body' | 'source' | 'yearPublished' | 'sourceNotItalic'>
+
+function contentHash(poem: CachedPoem): string {
+  const h = createHash('sha1')
+  h.update(RENDER_VERSION); h.update('\0')
+  h.update(poem.title ?? ''); h.update('\0')
+  h.update(poem.author ?? ''); h.update('\0')
+  h.update(poem.body ?? ''); h.update('\0')
+  h.update(poem.source ?? ''); h.update('\0')
+  h.update(String(poem.yearPublished ?? '')); h.update('\0')
+  h.update(String(poem.sourceNotItalic ?? ''))
+  return h.digest('hex').slice(0, 10)
+}
+
+// Lazy-loaded index of existing blob pathnames → URLs. Walked once per build.
+let blobIndexPromise: Promise<Map<string, string>> | null = null
+function getBlobIndex(): Promise<Map<string, string>> {
+  if (blobIndexPromise) return blobIndexPromise
+  blobIndexPromise = (async () => {
+    const index = new Map<string, string>()
+    if (!hasBlobToken) return index
+    let cursor: string | undefined
+    do {
+      const r = await list({ prefix: BLOB_PREFIX, cursor, limit: 1000 })
+      for (const b of r.blobs) index.set(b.pathname, b.url)
+      cursor = r.cursor
+    } while (cursor)
+    return index
+  })()
+  return blobIndexPromise
+}
 
 const fontRegular = readFileSync(
   new URL('../../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff', import.meta.url)
@@ -45,6 +84,21 @@ export const GET: APIRoute = async ({ params }) => {
   `)
   const poem = poems.find(p => String(p.number).padStart(5, '0') === number)
   if (!poem) return new Response('Not found', { status: 404 })
+
+  const cacheKey = `${BLOB_PREFIX}${number}-${contentHash(poem)}.png`
+  const pngHeaders = { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' }
+
+  if (hasBlobToken) {
+    const index = await getBlobIndex()
+    const cachedUrl = index.get(cacheKey)
+    if (cachedUrl) {
+      const res = await fetch(cachedUrl)
+      if (res.ok) {
+        const bytes = new Uint8Array(await res.arrayBuffer())
+        return new Response(bytes, { headers: pngHeaders })
+      }
+    }
+  }
 
   const rawLines = poem.body.split('\n')
   const start   = rawLines.findIndex(l => l.trim())
@@ -92,20 +146,22 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   // Split lines into N columns greedily: fill each column with as many complete
-  // stanzas as fit within AVAIL_H before moving to the next column.
+  // stanzas as fit within AVAIL_H before moving to the next column. Falls back to
+  // any-line splits when there aren't enough stanza breaks to fill the columns.
   function splitIntoN(lns: string[], n: number, fs: number): string[][] {
     if (n === 1) return [lns]
-    // Indices where a new stanza begins after a blank line
     const stanzaStarts: number[] = []
     for (let i = 1; i < lns.length; i++) {
       if (!lns[i - 1].trim() && lns[i].trim()) stanzaStarts.push(i)
     }
+    const candidates = stanzaStarts.length >= n - 1
+      ? stanzaStarts
+      : Array.from({ length: lns.length - 1 }, (_, i) => i + 1)
     const result: string[][] = []
     let prev = 0
     for (let c = 0; c < n - 1; c++) {
       const colsLeft = n - c - 1
-      const splits = stanzaStarts.filter(s => s > prev)
-      // Must leave at least one split point per remaining column
+      const splits = candidates.filter(s => s > prev)
       const usable = splits.slice(0, Math.max(1, splits.length - colsLeft + 1))
       // Greedy: advance as long as the column fits
       let split = usable[0] ?? lns.length
@@ -152,21 +208,37 @@ export const GET: APIRoute = async ({ params }) => {
   const { nCols, fontSize, maxChars, cols } = chosen
   const lineHeight = 1.65
 
+  // Hard-cap each column to what fits in AVAIL_H. Lines beyond this are dropped
+  // rather than overflowing — extreme overflow has crashed Resvg's geometry pass.
+  const lh = fontSize * S * lineHeight
+  const blankH = fontSize * S * 0.65
+  const clippedCols = cols.map(col => {
+    const out: string[] = []
+    let h = 0
+    for (const l of col) {
+      const add = l.trim() ? lh : blankH
+      if (h + add > AVAIL_H) break
+      out.push(l)
+      h += add
+    }
+    return out
+  })
+
   let poemSection: unknown
 
   if (nCols === 1) {
     poemSection = d(
-      makeLineEls(cols[0], fontSize, lineHeight, maxChars),
+      makeLineEls(clippedCols[0], fontSize, lineHeight, maxChars),
       { flexDirection: 'column', flexGrow: 1, minHeight: 0, justifyContent: 'center', overflow: 'hidden' }
     )
   } else {
     const rowChildren: unknown[] = []
-    for (let i = 0; i < cols.length; i++) {
+    for (let i = 0; i < clippedCols.length; i++) {
       rowChildren.push(
-        d(makeLineEls(cols[i], fontSize, lineHeight, maxChars),
+        d(makeLineEls(clippedCols[i], fontSize, lineHeight, maxChars),
           { flexDirection: 'column', flexGrow: 1, minHeight: 0, overflow: 'hidden' })
       )
-      if (i < cols.length - 1) rowChildren.push(d('', { width: COL_GAP }))
+      if (i < clippedCols.length - 1) rowChildren.push(d('', { width: COL_GAP }))
     }
     poemSection = d(rowChildren,
       { flexDirection: 'row', flexGrow: 1, minHeight: 0, overflow: 'hidden' })
@@ -221,7 +293,20 @@ export const GET: APIRoute = async ({ params }) => {
   })
 
   const png = new Resvg(svg).render().asPng()
-  return new Response(new Uint8Array(png.buffer as ArrayBuffer), {
-    headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' },
-  })
+  const bytes = new Uint8Array(png.buffer as ArrayBuffer)
+
+  if (hasBlobToken) {
+    try {
+      await put(cacheKey, Buffer.from(bytes), {
+        access: 'public',
+        contentType: 'image/png',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      })
+    } catch (e) {
+      console.warn(`Blob upload failed for ${cacheKey}:`, e)
+    }
+  }
+
+  return new Response(bytes, { headers: pngHeaders })
 }

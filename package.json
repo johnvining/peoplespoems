@@ -13,6 +13,7 @@
     "@fontsource/playfair-display": "^5.2.8",
     "@resvg/resvg-js": "^2.6.2",
     "@sanity/client": "^6.22.5",
+    "@vercel/blob": "^2.3.3",
     "astro": "^5.18.1",
     "marked": "^18.0.0",
     "satori": "^0.26.0"
