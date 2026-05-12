@@ -71,7 +71,7 @@ const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].f
           <p>
             {dateFormatted && <span>Added {dateFormatted}.</span>}
             {poem.sourceUrlPublic && <span> <a class="source-footer-link" href={poem.sourceUrlPublic} target="_blank" rel="noopener noreferrer">View this poem at source.</a></span>}
-            {poem.context && <span class="context" set:html={marked.parseInline(poem.context)} />}
+            {poem.context && <span class="context" set:html={poem.context.split('\n').map(l => marked.parseInline(l)).join('<br>')} />}
             {poem.editor?.initials && <span class="initials"> &mdash; <a class="initials-link" href={`/about#${poem.editor.initials.toLowerCase()}`}>{poem.editor.initials}</a></span>}
           </p>
         </footer>
