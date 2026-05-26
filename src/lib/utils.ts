@@ -11,3 +11,10 @@ export function fmtDate(d: string): string {
     day: 'numeric',
   })
 }
+
+/** Publication label: full date if known, else year, else "n.d.". */
+export function pubLabel(poem: { datePublished?: string; yearPublished?: number }): string {
+  if (poem.datePublished) return fmtDate(poem.datePublished)
+  if (poem.yearPublished) return String(poem.yearPublished)
+  return 'n.d.'
+}

@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
-import { firstLine, fmtDate } from '../../lib/utils'
+import { firstLine, fmtDate, pubLabel } from '../../lib/utils'
 import { marked } from 'marked'
 import { COPYRIGHT } from '../../lib/copyright'
 
@@ -38,11 +38,7 @@ const dateFormatted = fmtDate(poem.dateAdded ?? poem._createdAt)
 
 const isLong = poem.body.split('\n').length > 20
 
-const pubDate = poem.datePublished
-  ? fmtDate(poem.datePublished)
-  : poem.yearPublished ?? null
-
-const sourceExtra = [poem.cityState, pubDate != null ? String(pubDate) : null].filter(Boolean).join(', ')
+const sourceExtra = [poem.cityState, pubLabel(poem)].filter(Boolean).join(', ')
 ---
 
 <Layout

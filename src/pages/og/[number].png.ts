@@ -6,14 +6,14 @@ import { createHash } from 'node:crypto'
 import { list, put } from '@vercel/blob'
 import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
-import { firstLine } from '../../lib/utils'
+import { firstLine, pubLabel } from '../../lib/utils'
 
 // Bump when rendering logic changes to invalidate all cached PNGs.
-const RENDER_VERSION = 'v1'
+const RENDER_VERSION = 'v2'
 const BLOB_PREFIX = 'og/'
 const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
 
-type CachedPoem = Pick<Poem, 'number' | 'title' | 'author' | 'body' | 'source' | 'yearPublished' | 'sourceNotItalic'>
+type CachedPoem = Pick<Poem, 'number' | 'title' | 'author' | 'body' | 'source' | 'yearPublished' | 'datePublished' | 'sourceNotItalic'>
 
 function contentHash(poem: CachedPoem): string {
   const h = createHash('sha1')
@@ -23,6 +23,7 @@ function contentHash(poem: CachedPoem): string {
   h.update(poem.body ?? ''); h.update('\0')
   h.update(poem.source ?? ''); h.update('\0')
   h.update(String(poem.yearPublished ?? '')); h.update('\0')
+  h.update(poem.datePublished ?? ''); h.update('\0')
   h.update(String(poem.sourceNotItalic ?? ''))
   return h.digest('hex').slice(0, 10)
 }
@@ -79,8 +80,8 @@ export async function getStaticPaths() {
 export const GET: APIRoute = async ({ params }) => {
   const { number } = params as { number: string }
 
-  const poems = await safeFetch<Pick<Poem, 'number' | 'title' | 'author' | 'body' | 'source' | 'yearPublished' | 'sourceNotItalic'>>(`
-    *[_type == "poem" && defined(slug.current)] { number, title, author, body, source, yearPublished, sourceNotItalic }
+  const poems = await safeFetch<Pick<Poem, 'number' | 'title' | 'author' | 'body' | 'source' | 'yearPublished' | 'datePublished' | 'sourceNotItalic'>>(`
+    *[_type == "poem" && defined(slug.current)] { number, title, author, body, source, yearPublished, datePublished, sourceNotItalic }
   `)
   const poem = poems.find(p => String(p.number).padStart(5, '0') === number)
   if (!poem) return new Response('Not found', { status: 404 })
@@ -258,10 +259,9 @@ export const GET: APIRoute = async ({ params }) => {
 
   const sourceParts: unknown[] = []
   if (poem.source) sourceParts.push(txt(poem.source, poem.sourceNotItalic ? 'normal' : 'italic', 16, DIM))
-  if (poem.yearPublished) {
-    if (poem.source) { sourceParts.push(txt(',', 'normal', 16, DIM)); sourceParts.push(d('', { width: 4 * S })) }
-    sourceParts.push(txt(String(poem.yearPublished), 'normal', 16, DIM))
-  }
+  const pub = pubLabel(poem)
+  if (poem.source) { sourceParts.push(txt(',', 'normal', 16, DIM)); sourceParts.push(d('', { width: 4 * S })) }
+  sourceParts.push(txt(pub, 'normal', 16, DIM))
 
   const card = d([
     ...(headerParts.length ? [d(headerParts, { flexDirection: 'row', alignItems: 'baseline', marginBottom: sourceParts.length ? 6 * S : 32 * S })] : []),

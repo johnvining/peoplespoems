@@ -2,11 +2,11 @@
 import Layout from '../layouts/Layout.astro'
 import { safeFetch } from '../lib/sanity'
 import type { Poem } from '../lib/sanity'
-import { firstLine, fmtDate } from '../lib/utils'
+import { firstLine, fmtDate, pubLabel } from '../lib/utils'
 
-const allPoems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'dateAdded' | 'slug' | 'body'>>(`
+const allPoems = await safeFetch<Pick<Poem, '_id' | 'number' | 'title' | 'author' | 'source' | 'sourceNotItalic' | 'yearPublished' | 'datePublished' | 'dateAdded' | 'slug' | 'body'>>(`
   *[_type == "poem" && defined(slug.current)] | order(dateAdded desc, number desc) [0...20] {
-    _id, number, title, author, source, sourceNotItalic, yearPublished, dateAdded, slug, body
+    _id, number, title, author, source, sourceNotItalic, yearPublished, datePublished, dateAdded, slug, body
   }
 `)
 const poems = allPoems.slice(0, 20)
@@ -27,7 +27,7 @@ const poems = allPoems.slice(0, 20)
         {poems.map((poem) => {
           const href = `/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`
           const datePart = poem.dateAdded ? `added ${fmtDate(poem.dateAdded)}` : null
-          const sourcePart = [poem.source, poem.yearPublished].filter(Boolean).join(', ') || null
+          const sourcePart = [poem.source, pubLabel(poem)].filter(Boolean).join(', ')
           return (
             <li>
               <a href={href}>
