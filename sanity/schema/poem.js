@@ -10,7 +10,13 @@ export default {
       title: 'Number',
       type: 'number',
       description: 'Sequential ID used in the URL (e.g. 1 → /1/slug)',
+      readOnly: true,
       validation: (Rule) => Rule.required().integer().positive(),
+      initialValue: async (_params, { getClient }) => {
+        const client = getClient({ apiVersion: '2024-01-01' })
+        const max = await client.fetch('*[_type == "poem"] | order(number desc) [0].number')
+        return (max ?? 0) + 1
+      },
     },
     { name: 'title', title: 'Title', type: 'string' },
     { name: 'body', title: 'Poem Text', type: 'text' },
