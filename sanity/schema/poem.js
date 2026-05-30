@@ -60,7 +60,9 @@ export default {
       name: 'slug',
       title: 'Slug',
       type: 'slug',
+      description: 'Auto-generated from the title (or first line) on publish. You can still edit it manually.',
       options: { source: (doc) => doc.title || (doc.body ? doc.body.split('\n')[0] : ''), maxLength: 96 },
+      validation: (Rule) => Rule.required(),
     },
   ],
   preview: {
