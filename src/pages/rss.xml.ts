@@ -19,7 +19,7 @@ function poemHtml(poem: Poem): string {
 
 export async function GET(context: APIContext) {
   const poems = await safeFetch<Poem>(
-    `*[_type == "poem"] | order(dateAdded desc, number desc) { _id, _createdAt, number, title, body, author, dateAdded, slug }`
+    `*[_type == "poem" && defined(slug.current)] | order(dateAdded desc, number desc) { _id, _createdAt, number, title, body, author, dateAdded, slug }`
   )
 
   return rss({
