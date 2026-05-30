@@ -2,8 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import { safeFetch } from '../../lib/sanity'
 import type { Poem } from '../../lib/sanity'
-import { firstLine, fmtDate, pubLabel } from '../../lib/utils'
-import { marked } from 'marked'
+import { firstLine, fmtDate, pubLabel, renderContext } from '../../lib/utils'
 import { COPYRIGHT } from '../../lib/copyright'
 
 export async function getStaticPaths() {
@@ -64,12 +63,12 @@ const sourceExtra = [poem.cityState, pubLabel(poem)].filter(Boolean).join(', ')
 
       {(dateFormatted || poem.context || poem.sourceUrlPublic || poem.source) && (
         <footer class="editorial">
-          <p>
+          <div class="editorial-text">
             {dateFormatted && <span>Added {dateFormatted}.</span>}
             {poem.sourceUrlPublic && <span> <a class="source-footer-link" href={poem.sourceUrlPublic} target="_blank" rel="noopener noreferrer">View this poem at source.</a></span>}
-            {poem.context && <span class="context" set:html={poem.context.split('\n').map(l => marked.parseInline(l)).join('<br>')} />}
+            {poem.context && <span class="context" set:html={renderContext(poem.context)} />}
             {poem.editor?.initials && <span class="initials"> &mdash; <a class="initials-link" href={`/about#${poem.editor.initials.toLowerCase()}`}>{poem.editor.initials}</a></span>}
-          </p>
+          </div>
         </footer>
       )}
 
@@ -140,6 +139,13 @@ const sourceExtra = [poem.cityState, pubLabel(poem)].filter(Boolean).join(', ')
   .source-footer-link:hover,
   .context :global(a:hover) {
     color: #888;
+  }
+
+  .context :global(blockquote) {
+    margin: 0.6rem 0 0.6rem 0.25rem;
+    padding-left: 0.85rem;
+    border-left: 2px solid #ddd8ce;
+    color: inherit;
   }
 
   .poem-body {
