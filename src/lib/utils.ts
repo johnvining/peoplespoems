@@ -2,9 +2,14 @@ import { marked } from 'marked'
 
 /**
  * Renders the context field as inline markdown by default, grouping consecutive
- * lines that start with `>` into a blockquote that breaks onto its own block.
+ * lines that start with `>` into a blockquote. Nested `> >` lines recurse into
+ * nested blockquotes.
  */
 export function renderContext(text: string): string {
+  return renderLines(text.split('\n'))
+}
+
+function renderLines(lines: string[]): string {
   const out: string[] = []
   let inline: string[] = []
   let quote: string[] = []
@@ -12,9 +17,9 @@ export function renderContext(text: string): string {
     if (inline.length) { out.push(inline.map((l) => marked.parseInline(l)).join('<br>')); inline = [] }
   }
   const flushQuote = () => {
-    if (quote.length) { out.push(`<blockquote>${quote.map((l) => marked.parseInline(l)).join('<br>')}</blockquote>`); quote = [] }
+    if (quote.length) { out.push(`<blockquote>${renderLines(quote)}</blockquote>`); quote = [] }
   }
-  for (const line of text.split('\n')) {
+  for (const line of lines) {
     const m = /^\s*>\s?(.*)$/.exec(line)
     if (m) { flushInline(); quote.push(m[1]) }
     else { flushQuote(); inline.push(line) }
