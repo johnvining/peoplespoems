@@ -1,16 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { marked } from 'marked'
 import { fetchEditors } from '../lib/sanity'
+// Paste the about copy directly into src/content/about.md — it's imported raw here.
+import introMd from '../content/about.md?raw'
 
 const editors = await fetchEditors()
+
+const introHtml = marked.parse(introMd, { breaks: true })
 ---
 
 <Layout title="About — People's Poems">
   <div class="page about-page">
 
-    <div class="intro">
-      <p><!-- Introduction goes here --></p>
-    </div>
+    <div class="intro" set:html={introHtml} />
+
+    <p class="signature">&mdash; <a class="initials-link" href="/about#jv">JV</a></p>
 
     <section class="editors">
       <h2>Contributors</h2>
@@ -47,17 +52,57 @@ const editors = await fetchEditors()
   }
 
   .intro {
+    margin-bottom: 1.5rem;
+  }
+
+  .signature {
+    color: #bbb;
+    font-size: 0.95rem;
     margin-bottom: 3rem;
+    text-align: right;
   }
 
-  .intro p {
-    font-size: 0.875rem;
+  .intro :global(p) {
+    font-size: 0.95rem;
     line-height: 1.85;
-    color: #555;
+    color: #444;
   }
 
-  .intro p + p {
+  .intro :global(p + p) {
     margin-top: 1rem;
+  }
+
+  .intro :global(em) {
+    font-style: italic;
+  }
+
+  .intro :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .intro :global(a:hover) {
+    color: #888;
+  }
+
+  .intro :global(blockquote) {
+    margin: 0 0 2.5rem;
+    padding-left: 1.1rem;
+    border-left: 2px solid #ddd8ce;
+  }
+
+  .intro :global(blockquote p) {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #777;
+    white-space: pre-wrap;
+  }
+
+  .intro :global(blockquote p + p) {
+    margin-top: 0.9rem;
   }
 
   h2 {
