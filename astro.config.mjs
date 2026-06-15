@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap'
 export default defineConfig({
   output: 'static',
   site: 'https://www.peoplespoems.com',
+  trailingSlash: 'never',
   integrations: [
     sitemap({
       filter: (page) => {

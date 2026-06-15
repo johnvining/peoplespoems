@@ -6,7 +6,8 @@ interface Props {
 const { title, ogImage } = Astro.props
 const currentPath = Astro.url.pathname
 const siteUrl = 'https://www.peoplespoems.com'
-const canonicalUrl = new URL(currentPath, siteUrl).href
+const canonicalPath = currentPath !== '/' ? currentPath.replace(/\/$/, '') : '/'
+const canonicalUrl = new URL(canonicalPath, siteUrl).href
 ---
 
 <!doctype html>
