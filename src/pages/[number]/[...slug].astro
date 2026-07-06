@@ -29,8 +29,12 @@ const poem = all.find((p) => String(p.number).padStart(5, '0') === number || Str
 
 if (!poem) return Astro.redirect('/')
 
-if (!Astro.params.slug) {
-  return Astro.redirect(`/${number}/${poem.slug.current}`, 301)
+// Every poem has exactly one canonical URL: zero-padded number + slug.
+// Redirect all other variants (unpadded number, missing or wrong slug) to it
+// so Google indexes a single page per poem instead of duplicate URLs.
+const canonicalPath = `/${String(poem.number).padStart(5, '0')}/${poem.slug.current}`
+if (Astro.url.pathname !== canonicalPath) {
+  return Astro.redirect(canonicalPath, 301)
 }
 
 const dateFormatted = fmtDate(poem.dateAdded ?? poem._createdAt)
