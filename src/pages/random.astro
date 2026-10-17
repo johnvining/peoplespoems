@@ -6,6 +6,8 @@ const poems = await safeFetch<Pick<Poem, 'number' | 'slug'>>(`*[_type == "poem" 
 const paths = poems.map((p) => `/${String(p.number).padStart(5, '0')}/${p.slug.current}`)
 ---
 
+<meta name="robots" content="noindex" />
+
 <script define:vars={{ paths }}>
   if (paths.length > 0) {
     window.location.replace(paths[Math.floor(Math.random() * paths.length)])

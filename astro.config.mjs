@@ -9,6 +9,8 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const parts = new URL(page).pathname.split('/').filter(Boolean)
+        // /random is a JS redirect to a random poem, not a real page
+        if (parts[0] === 'random') return false
         // For poem URLs (first segment is all digits), only include the canonical
         // form: 5-digit zero-padded number + slug (e.g. /00001/the-raven)
         if (parts.length > 0 && /^\d+$/.test(parts[0])) {
